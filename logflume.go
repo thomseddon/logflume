@@ -16,6 +16,44 @@ import (
   elasticSearch "github.com/mattbaird/elastigo/core"
 )
 
+var FACILITY_LABELS = [...]string{
+  "kernel",
+  "user-level",
+  "mail",
+  "daemon",
+  "security/authorization",
+  "syslogd",
+  "line printer",
+  "network news",
+  "uucp",
+  "clock",
+  "security/authorization",
+  "ftp",
+  "ntp",
+  "log audit",
+  "log alert",
+  "clock",
+  "local0",
+  "local1",
+  "local2",
+  "local3",
+  "local4",
+  "local5",
+  "local6",
+  "local7",
+}
+
+var SEVERITY_LABELS = [...]string{
+  "emergency",
+  "alert",
+  "critical",
+  "error",
+  "warning",
+  "notice",
+  "informational",
+  "debug",
+}
+
 func handlePacket(buffer []byte, addr net.Addr) {
   parser := rfc5424.NewParser(buffer)
   err := parser.Parse()
@@ -27,8 +65,8 @@ func handlePacket(buffer []byte, addr net.Addr) {
 
   log := parser.Dump()
   log["@timestamp"] = log["timestamp"]
-  log["facility_label"] = "user-level"  // TODO
-  log["severity_label"] = "Error"       // TODO
+  log["facility_label"] = FACILITY_LABELS[(log["facility"]).(int)]
+  log["severity_label"] = SEVERITY_LABELS[(log["severity"]).(int)]
   log["type"] = "syslog"
 
   now := time.Now()
