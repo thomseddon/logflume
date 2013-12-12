@@ -54,7 +54,7 @@ var SEVERITY_LABELS = [...]string{
   "debug",
 }
 
-func handlePacket(buffer []byte, addr net.Addr) {
+func handlePacket (buffer []byte, addr net.Addr) {
   parser := rfc5424.NewParser(buffer)
   err := parser.Parse()
 
@@ -80,20 +80,12 @@ func handlePacket(buffer []byte, addr net.Addr) {
   fmt.Println("Logged")
 }
 
-func main() {
-
-  port := flag.String("port", "5544", "Port to listen on")
-  esDomain := flag.String("elasticSearch", "localhost", "elastic search domain")
-  flag.Parse()
-
+func udpserver (port string) {
   // Create udp socket
-  conn, err := net.ListenPacket("udp4", ":" + *port)
+  conn, err := net.ListenPacket("udp4", ":" + port)
   if err != nil {
     panic("Could not ListenUDP")
   }
-
-  // Setup elastic search
-  elasticSearchServer.Domain = *esDomain
 
   for {
     buffer := make([]byte, 1024)
@@ -106,4 +98,16 @@ func main() {
 
     go handlePacket(buffer[:rlen - 1], addr)
   }
+}
+
+func main () {
+
+  port := flag.String("port", "5544", "Port to listen on")
+  esDomain := flag.String("elasticSearch", "localhost", "elastic search domain")
+  flag.Parse()
+
+  // Setup elastic search
+  elasticSearchServer.Domain = *esDomain
+
+  udpserver(*port)
 }
