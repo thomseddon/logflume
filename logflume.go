@@ -80,9 +80,9 @@ func handlePacket (buffer []byte, addr net.Addr) {
   fmt.Println("Logged")
 }
 
-func udpserver (port string) {
+func udpserver (laddr string) {
   // Create udp socket
-  conn, err := net.ListenPacket("udp4", ":" + port)
+  conn, err := net.ListenPacket("udp4", laddr)
   if err != nil {
     panic("Could not ListenUDP")
   }
@@ -102,6 +102,7 @@ func udpserver (port string) {
 
 func main () {
 
+  domain := flag.String("domain", "localhost", "Domain to listen on")
   port := flag.String("port", "5544", "Port to listen on")
   esDomain := flag.String("elasticSearch", "localhost", "elastic search domain")
   flag.Parse()
@@ -109,5 +110,5 @@ func main () {
   // Setup elastic search
   elasticSearchServer.Domain = *esDomain
 
-  udpserver(*port)
+  udpserver(*domain + ":" + *port)
 }
