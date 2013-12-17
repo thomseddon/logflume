@@ -54,7 +54,7 @@ var SEVERITY_LABELS = [...]string{
   "debug",
 }
 
-func handlePacket (buffer []byte, addr net.Addr) {
+func handlePacket (buffer []byte) {
   parser := rfc5424.NewParser(buffer)
   err := parser.Parse()
 
@@ -89,14 +89,44 @@ func udpserver (laddr string) {
 
   for {
     buffer := make([]byte, 1024)
-    rlen, addr, err := conn.ReadFrom(buffer)
+    rlen, _, err := conn.ReadFrom(buffer)
 
     if err != nil {
       fmt.Printf("Error reading from udp connection")
       continue
     }
 
-    go handlePacket(buffer[:rlen - 1], addr)
+    go handlePacket(buffer[:rlen - 1])
+  }
+}
+
+func tcpserver (laddr string) {
+  listener, err := net.Listen("tcp4", laddr)
+  if err != nil {
+    panic("Could not ListenTCP")
+  }
+
+  for {
+    conn, err := listener.Accept()
+
+    if err != nil {
+      fmt.Printf("Error accepting")
+      continue
+    }
+
+    go func (conn net.Conn) {
+      buffer := make([]byte, 1024)
+      rlen, err := conn.Read(buffer)
+
+      if err != nil {
+        fmt.Printf("Error reading from tcp connection")
+        return
+      }
+
+      conn.Close()
+
+      go handlePacket(buffer[:rlen - 1])
+    }(conn)
   }
 }
 
@@ -104,11 +134,19 @@ func main () {
 
   domain := flag.String("domain", "localhost", "Domain to listen on")
   port := flag.String("port", "5544", "Port to listen on")
+  socket := flag.String("socket", "tcp", "udp or tcp")
   esDomain := flag.String("elasticSearch", "localhost", "elastic search domain")
   flag.Parse()
 
   // Setup elastic search
   elasticSearchServer.Domain = *esDomain
 
-  udpserver(*domain + ":" + *port)
+  switch (*socket) {
+  case "tcp":
+    tcpserver(*domain + ":" + *port)
+  case "udp":
+    udpserver(*domain + ":" + *port)
+  default:
+    fmt.Println("Invalid socket option")
+  }
 }
