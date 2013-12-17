@@ -1,6 +1,6 @@
 # LogFlume
 
-Simple program to index syslog messages (via UDP) in elastic search in a logstash compatible format
+Simple program to index syslog messages (via UDP or TCP) in elastic search in a logstash compatible format
 
 This should be a drop in replacement for logstash that takes syslog input and outputs to elastic search
 
@@ -9,7 +9,7 @@ This should be a drop in replacement for logstash that takes syslog input and ou
 At the moment, syslog messages must be RFC 5424 format, this can be achieved as follows:
 
 ```
-*.* @localhost:5544;RSYSLOG_SyslogProtocol23Format
+*.* @@localhost:5544;RSYSLOG_SyslogProtocol23Format
 ```
 
 ### License
